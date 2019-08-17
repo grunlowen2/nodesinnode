@@ -23,7 +23,7 @@ Experimenting with how to potentially process dags in Node.js
 - Ability to validate function arguments. (see ow.js)
 
 ## Run program
-- clone repo, and cd into
+- Clone repo, and cd into
 - The command format is:
   - npm run-script sim targetNode dagMap simJson
 - Some examples:
