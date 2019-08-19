@@ -1,148 +1,149 @@
 'use strict'
 const _ = require('lodash');
 
-const nodesProcessor = {
+//node processor
+const np = {
   targetNode: '',
   nodeKeysToProcess: [],
   relationalMap: {},
-  mapOfNodesThatCanBeStartedImmediately: {},
   finalMap: new Map(),
   startTime: (new Date()).getTime(),
 
-  entry_startNodesWithoutDependencies: function() {
-    for (let [nodeKey, nodeProps] of this.mapOfNodesThatCanBeStartedImmediately) {
+  startNodesWithoutDependencies: (mapOfNodesThatCanBeStartedImmediately) => {
+    for (let [nodeKey, nodeProps] of mapOfNodesThatCanBeStartedImmediately) {
       console.log(`!!!! can start node immediately: ${nodeKey}`)
-      this.processSingleNode(nodeKey, nodeProps)
+      np.processSingleNode(nodeKey, nodeProps)
     }
   },
 
-  processSingleNode: function(nodeKey, nodesProps) {
+  processSingleNode: (nodeKey, nodesProps) => {
     if (nodesProps.finalValue) {
-      this.nodeFinishedProcessing(nodeKey, nodesProps.nodesToContact, nodesProps.finalValue)
+      np.nodeFinishedProcessing(nodeKey, nodesProps.nodesToContact, nodesProps.finalValue)
     } else {
       console.log(`processing node: ${nodeKey}`)
-      this.executeNodeFunction(nodesProps.func, nodesProps.args)
+      np.executeNodeFunction(nodesProps.func, nodesProps.args)
           .then((finalValue) => {
             console.log(`result returned, finalValue for ${nodeKey} is: ${finalValue}`)
-            this.nodeFinishedProcessing(nodeKey, nodesProps.nodesToContact, finalValue)
+            np.nodeFinishedProcessing(nodeKey, nodesProps.nodesToContact, finalValue)
           })
           .catch((err) => {
-            console.log('error processing node ' + nodeKey + ' ' + err)
+            console.log(`error processing node ${nodeKey} error: ${err}`)
           })
     }
   },
 
-  executeNodeFunction: function(funcRef, argsRef) {
-    return new Promise((resolve, reject) => {
-      //this function call might take some time to return
-      resolve( funcRef(...argsRef) )
-    })
-  },
+  //this function call might take some time to return
+  executeNodeFunction: (funcRef, argsRef) => new Promise((resolve) => resolve(funcRef(...argsRef))),
 
-  nodeFinishedProcessing: function(thisNodeKey, nodesToContact, finalValue) {
+  nodeFinishedProcessing: (thisNodeKey, nodesToContact, finalValue) => {
     console.log(`completeProcessing, removing nodeKeysToProcess: ${thisNodeKey}`)
-    _.remove(this.nodeKeysToProcess, function(each) { return each == thisNodeKey })
-    this.contactNodes(thisNodeKey, nodesToContact, finalValue)
-    this.addNodeToFinalMap(thisNodeKey, finalValue)
+    _.remove(np.nodeKeysToProcess, (each) => each === thisNodeKey)
+    np.contactNodes(thisNodeKey, nodesToContact, finalValue)
+    np.addNodeToFinalMap(thisNodeKey, finalValue)
 
-    if(_.isEmpty(this.nodeKeysToProcess)) { this.logFinalMessage() }
+    if (_.isEmpty(np.nodeKeysToProcess)) { np.logFinalMessage() }
   },
 
   //loop thru nodesToContact, remove this node from their dependentOnNodes, and if that
   //list is now empty, call the processSingleNode function.
-  contactNodes: function(thisNodeKey, nodesToContact, finalValue) {
+  contactNodes: (thisNodeKey, nodesToContact, finalValue) => {
     for (let eachNodeToContactKey of nodesToContact) {
-      let eachNodeToContactValObj = this.relationalMap.get(eachNodeToContactKey)
+      let eachNodeToContactValObj = np.relationalMap.get(eachNodeToContactKey)
       let argsOfNodeToContact = eachNodeToContactValObj.args
       console.log(`contacting node: ${eachNodeToContactKey}, replacing arg ${thisNodeKey} with ${finalValue}`)
       argsOfNodeToContact.splice(argsOfNodeToContact.indexOf(thisNodeKey), 1, finalValue)
       //have set the finalValue in other node's args, now remove this node ref from other dependentOnNodes
-      _.remove(eachNodeToContactValObj.dependentOnNodes, function(each) { return each == thisNodeKey })
-      this.determineIfOtherNodeCanStart(eachNodeToContactValObj, eachNodeToContactKey)
+      _.remove(eachNodeToContactValObj.dependentOnNodes, (each) => each === thisNodeKey)
+      np.determineIfOtherNodeCanStart(eachNodeToContactValObj, eachNodeToContactKey)
     }
   },
 
-  determineIfOtherNodeCanStart: function(eachNodeToContactValObj, eachNodeToContactKey) {
+  determineIfOtherNodeCanStart: (eachNodeToContactValObj, eachNodeToContactKey) => {
     if (eachNodeToContactValObj.dependentOnNodes.length === 0) {
       console.log(`${eachNodeToContactKey} has no more dependencies, so calling init`)
-      this.processSingleNode(eachNodeToContactKey, eachNodeToContactValObj)
+      np.processSingleNode(eachNodeToContactKey, eachNodeToContactValObj)
     }
   },
 
-  addNodeToFinalMap: function(nodeKey, finalValue) {
-    this.finalMap.set(nodeKey, finalValue)
+  addNodeToFinalMap: (nodeKey, finalValue) => {
+    np.finalMap.set(nodeKey, finalValue)
   },
 
-  logFinalMessage: function() {
-    console.log(`\n ** final map, process time was ${((new Date()).getTime() - this.startTime)/1000} seconds`)
-    console.log(this.finalMap)
-    console.log(`'\n ** target node is: ${this.targetNode} its final value is:
-          ${this.finalMap.get(this.targetNode)}`)
+  logFinalMessage: () => {
+    console.log(`\n ** final map, process time was ${((new Date()).getTime() - np.startTime) / 1000} seconds`)
+    console.log(np.finalMap)
+    console.log(`'\n ** target node is: ${np.targetNode} its final value is:
+          ${np.finalMap.get(np.targetNode)}`)
   }
 
 }
 
-const processDag = function(relationalMap, nodeKeysToProcess, targetNode) {
+const processDag = (relationalMap, nodeKeysToProcess, targetNode) => {
   let mapOfNodesThatCanBeStartedImmediately = new Map([...relationalMap]
       .filter((mapKeyValAsArray) => mapKeyValAsArray[1].dependentOnNodes && mapKeyValAsArray[1].dependentOnNodes.length === 0))
 
-  //TODO ?? need copy ?? use copy of map in nodesProcessor, because don't want to loop over mutable
-  nodesProcessor.relationalMap = relationalMap
-  nodesProcessor.nodeKeysToProcess = nodeKeysToProcess
-  nodesProcessor.targetNode = targetNode
-  nodesProcessor.mapOfNodesThatCanBeStartedImmediately = mapOfNodesThatCanBeStartedImmediately
+  //need copy ?? use copy of map in nodesProcessor, because don't want to loop over mutable
+  np.relationalMap = relationalMap
+  np.nodeKeysToProcess = nodeKeysToProcess
+  np.targetNode = targetNode
 
-  nodesProcessor.entry_startNodesWithoutDependencies()
+  np.startNodesWithoutDependencies(mapOfNodesThatCanBeStartedImmediately)
 }
 
 //add nodesToContact and dependentNodes to each node in map
-const populateDependencies = function(relationalMap) {
-  for (let[nodeKey, nodeProps] of relationalMap) {
-    if (nodeProps.hasOwnProperty('finalValue')) continue //can't have dependencies, and other nodes will add themselves to nodesToContact
-    for (let targetArg of nodeProps.args) { //iterate over args to find any 'node' references
-      //if the map has the node entry, then get it, and add this node to its nodesToContact
-      if (relationalMap.has(targetArg)) {
-        let otherNode = relationalMap.get(targetArg)
-        otherNode.nodesToContact.push(nodeKey)
-        //also put in this nodes dependencies
-        nodeProps.dependentOnNodes.push(targetArg)
+const populateDependencies = (relationalMap) => {
+  for (let [nodeKey, nodeProps] of relationalMap) {
+    //can't have dependencies, and other nodes will add themselves to nodesToContact
+    if (!Object.prototype.hasOwnProperty.call(nodeProps, 'finalValue')) {
+    //iterate over args to find any 'node' references if the map has the node entry, then get it, and add this node to its nodesToContact
+      for (let targetArg of nodeProps.args) {
+        if (relationalMap.has(targetArg)) {
+          let otherNode = relationalMap.get(targetArg)
+          otherNode.nodesToContact.push(nodeKey)
+          //also put in this nodes dependencies
+          nodeProps.dependentOnNodes.push(targetArg)
+        }
       }
     }
   }
 }
 
 //add the common props to each node
-const createRelationalMap = function(dagMap, nodeKeysToProcess) {
+const createRelationalMap = (dagMap, nodeKeysToProcess) => {
   //only want a map with nodes contained in nodeKeysToProcess
-  const dagMapBasedOnTargetNode = new Map([...dagMap].filter( ([key, val]) => _.includes(nodeKeysToProcess, key)))
-  const mapCopy = _.cloneDeep(dagMapBasedOnTargetNode) //otherwise original dagMap would be modified
+  const dagMapBasedOnTargetNode = new Map([...dagMap].filter(([key, val]) => _.includes(nodeKeysToProcess, key)))
+  //don't want original dagMap to be modified
+  const mapCopy = _.cloneDeep(dagMapBasedOnTargetNode)
   for (let [mapKey, mapVal] of mapCopy) {
-    //properties to be added to each node for processing
-    Object.assign(mapVal, { dependentOnNodes:[], //nodes this node is dependent on
-                            nodesToContact:[], //nodes to contact when this node has a finalValue,
-                          })
-  }
+    //properties to be added to each node are 1) nodes this node is dependent on and 2) nodes to contact when this node has a finalValue.
+    Object.assign(mapVal, {
+      dependentOnNodes: [],
+      nodesToContact: []
+    })
+   }
   populateDependencies(mapCopy)
   return mapCopy
 }
 
 //return only relevant connected to targetNode
-const determineNodesToProcess = function(dagMap, targetNodeKey, setOfNodesToProcess=new Set([])) {
-  if (dagMap.has(targetNodeKey)) setOfNodesToProcess.add(targetNodeKey)
+const determineNodesToProcess = (dagMap, targetNodeKey, setOfNodesToProcess = new Set([])) => {
+  if (dagMap.has(targetNodeKey)) { setOfNodesToProcess.add(targetNodeKey) }
   let targetNodeArgs = dagMap.get(targetNodeKey).args
   if (targetNodeArgs) {
     for (let arg of targetNodeArgs) {
-      if (dagMap.has(arg)) { //if the arg is a node, add it to setOfNodesToProcess
+      //if the arg is a node, add it to setOfNodesToProcess
+      if (dagMap.has(arg)) {
         setOfNodesToProcess.add(arg)
-        determineNodesToProcess(dagMap, arg, setOfNodesToProcess) //recursive for each arg in args list
+        //recursive for each arg in args list
+        determineNodesToProcess(dagMap, arg, setOfNodesToProcess)
       }
     }
   }
   return Array.from(setOfNodesToProcess)
 }
 
-exports.entry = function(targetNode, dagMap) {
-  if(!targetNode || !dagMap) { console.log('no target node or dag map provided'); return }
+exports.entry = (targetNode, dagMap) => {
+  if (!targetNode || !dagMap) { console.log('no target node or dag map provided'); return }
   console.log('** raw dag map')
   console.log(dagMap)
 

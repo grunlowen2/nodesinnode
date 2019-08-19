@@ -11,12 +11,12 @@ const node3secBody =
   "console.log(`returning from p1a exports.node3sec, input was: ${someInt} returning: ${ans}`);" +
   "return ans"
 
-const funcToString = function(funcArgs, funcBody) {
+const funcToString = (funcArgs, funcBody) => {
   let funcAsJSON = {'args':funcArgs,'body':funcBody}
   return JSON.stringify(funcAsJSON)
 }
 
-const stringToFunction = function(funcAsString) {
+const stringToFunction = (funcAsString) => {
 //  console.log('nodes_p1a functionAsString: ' + funcAsString)
   let funcAsObject = JSON.parse(funcAsString)
   let AsyncFunction = Object.getPrototypeOf(async function(){}).constructor

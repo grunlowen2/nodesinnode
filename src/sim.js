@@ -3,22 +3,20 @@ const dagMap1 = require('./dagMaps').dagMap1
 const dagMap2 = require('./dagMaps').dagMap2
 const dagMap3 = require('./dagMaps').dagMap3
 const asyncDagProcessor = require('./asyncDagProcessor')
-const _ = require('lodash')
 
-const initSimFunctions = function(targetNode, dagMap, simJson) {
+const initSimFunctions = (targetNode, dagMap, simJson) => {
   if (!targetNode) { console.log('!! args must be targetNode simMap(optional)'); return }
   if (!dagMap.has(targetNode)) { console.log('!! node not in dag map'); return }
-  if (!simJson) {
-    var simMsg = ' !! NO SIMULATION !!'
-  } else {
+  var simMsg = '-- NO SIMULATION --'
+  if (simJson) {
     dagMap = modifyDagMapForSim(dagMap, simJson)
-    var simMsg = ' !! START SIMULATION !!'
+    simMsg = '-- START SIMULATION --'
   }
   console.log(`Target node is: ${targetNode} ${simMsg}`)
   asyncDagProcessor.entry(targetNode, dagMap)
 }
 
-const modifyDagMapForSim = function(dagMap, simJson) {
+const modifyDagMapForSim = (dagMap, simJson) => {
   let simMap = new Map(Object.entries(JSON.parse(simJson)))
   for (let [nodeKey, valueObject] of simMap.entries()) {
     //for each property in the sim object, overwrite the matching value in the node object
@@ -30,7 +28,7 @@ const modifyDagMapForSim = function(dagMap, simJson) {
   return dagMap
 }
 
-const main = function([targetNode, selectedDagMap, simJson]) {
+const main = ([targetNode, selectedDagMap, simJson]) => {
   console.log(targetNode)
   var dagMap
   switch (selectedDagMap) {

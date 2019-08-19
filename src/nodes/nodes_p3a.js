@@ -1,6 +1,6 @@
 const sleep = require('./common').sleep
 
-exports.nodeDivBy3 = function(someInt) {
+exports.nodeDivBy3 = (someInt) => {
   rem = someInt % 3
   switch(rem) {
     case 0:
@@ -14,11 +14,11 @@ exports.nodeDivBy3 = function(someInt) {
   }
 }
 
-exports.node4 = function(someInt) {
+exports.node4 = (someInt) => {
   return someInt * 11
 }
 
-exports.node4sec = async function(input) {
+exports.node4sec = async (input) => {
   console.log(`p3a exports.node4sec, input is: ${input}`)
   await sleep(4000)
   return input + 123
