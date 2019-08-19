@@ -7,7 +7,6 @@ const np = {
   nodeKeysToProcess: [],
   relationalMap: {},
   finalMap: new Map(),
-  startTime: (new Date()).getTime(),
 
   startNodesWithoutDependencies: (mapOfNodesThatCanBeStartedImmediately) => {
     for (let [nodeKey, nodeProps] of mapOfNodesThatCanBeStartedImmediately) {
@@ -70,7 +69,7 @@ const np = {
   },
 
   logFinalMessage: () => {
-    console.log(`\n ** final map, process time was ${((new Date()).getTime() - np.startTime) / 1000} seconds`)
+    console.log(`\n ** final map, process time was ${((new Date()).getTime() - startTime) / 1000} seconds`)
     console.log(np.finalMap)
     console.log(`'\n ** target node is: ${np.targetNode} its final value is:
           ${np.finalMap.get(np.targetNode)}`)
@@ -157,3 +156,5 @@ exports.entry = (targetNode, dagMap) => {
 
   processDag(relationalMap, nodeKeysToProcess, targetNode)
 }
+
+  const startTime = (new Date()).getTime()
