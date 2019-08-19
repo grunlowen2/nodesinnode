@@ -40,10 +40,4 @@ const main = ([targetNode, selectedDagMap, simJson]) => {
   initSimFunctions(targetNode, dagMap, simJson)
 }
 
-//example inputs:
-//npm run-script sim 'node_c' dagMap1 '{ "node_e": {"finalValue":-5} }'
-//npm run-script sim 'node_r' dagMap3
-//npm run-script sim 'node_combo' dagMap3
-//npm run-script sim 'node_c' dagMap1 '{ "node_b": { "args":["5"] } }'
-//npm run-script sim 'node_lastMap1' dagMap1
 main(process.argv.slice(2))
