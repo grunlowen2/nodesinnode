@@ -1,5 +1,6 @@
 'use strict'
-const _ = require('lodash');
+const _ = require('lodash')
+const fs = require('fs')
 
 //node processor
 const np = {
@@ -40,7 +41,7 @@ const np = {
     np.contactNodes(thisNodeKey, nodesToContact, finalValue)
     np.addNodeToFinalMap(thisNodeKey, finalValue)
 
-    if (_.isEmpty(np.nodeKeysToProcess)) { np.logFinalMessage() }
+    if (_.isEmpty(np.nodeKeysToProcess)) { np.publishResults() }
   },
 
   //loop thru nodesToContact, remove this node from their dependentOnNodes, and if that
@@ -68,11 +69,21 @@ const np = {
     np.finalMap.set(nodeKey, finalValue)
   },
 
-  logFinalMessage: () => {
-    console.log(`\n ** final map, process time was ${((new Date()).getTime() - startTime) / 1000} seconds`)
+  //api call or whatever
+  publishResults: () => {
+    const processTimeMsg = `\n ** final map, process time was ${((new Date()).getTime() - startTime) / 1000} seconds \n`
+    const finalNodeMsg = `'\n ** target node is: ${np.targetNode} its final value is:
+          ${np.finalMap.get(np.targetNode)}`
+    const stream = fs.createWriteStream('./dagResults.txt')
+    stream.once('open', () => {
+      stream.write(processTimeMsg)
+      stream.write(JSON.stringify([...np.finalMap]))
+      stream.write(finalNodeMsg)
+      stream.end()
+    })
+    console.log(processTimeMsg)
     console.log(np.finalMap)
-    console.log(`'\n ** target node is: ${np.targetNode} its final value is:
-          ${np.finalMap.get(np.targetNode)}`)
+    console.log(finalNodeMsg)
   }
 
 }
@@ -141,7 +152,7 @@ const determineNodesToProcess = (dagMap, targetNodeKey, setOfNodesToProcess = ne
   return Array.from(setOfNodesToProcess)
 }
 
-exports.entry = (targetNode, dagMap) => {
+const entry = (targetNode, dagMap) => {
   if (!targetNode || !dagMap) { console.log('no target node or dag map provided'); return }
   console.log('** raw dag map')
   console.log(dagMap)
@@ -157,4 +168,7 @@ exports.entry = (targetNode, dagMap) => {
   processDag(relationalMap, nodeKeysToProcess, targetNode)
 }
 
-  const startTime = (new Date()).getTime()
+const startTime = (new Date()).getTime()
+
+
+exports.entry = entry

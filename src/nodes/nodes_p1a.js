@@ -1,8 +1,9 @@
-// node3sec = async function(someInt) {
-//   await new Promise(resolve => setTimeout(resolve, 3000))
-//   console.log(`returning from p1a exports.node3sec, input was: ${someInt} returning: ${ans}`)
-//   return ans
-// }
+const node3sec = async function(someInt) {
+  await new Promise(resolve => setTimeout(resolve, 3000))
+  const ans = 3 * someInt
+  console.log(`returning from p1a exports.node3sec, input was: ${someInt} returning: ${ans}`)
+  return ans
+}
 
 const node3secArgs = "someInt"
 const node3secBody =
@@ -25,4 +26,5 @@ const stringToFunction = (funcAsString) => {
 
 const node3secAsString = funcToString(node3secArgs, node3secBody)
 
-exports.node3sec = stringToFunction(node3secAsString)
+//exports.node3sec = stringToFunction(node3secAsString)
+exports.node3sec = node3sec

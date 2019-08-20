@@ -28,7 +28,7 @@ const modifyDagMapForSim = (dagMap, simJson) => {
   return dagMap
 }
 
-const main = ([targetNode, selectedDagMap, simJson]) => {
+const main = function ([targetNode, selectedDagMap, simJson]) {
   console.log(targetNode)
   var dagMap
   switch (selectedDagMap) {
@@ -40,4 +40,5 @@ const main = ([targetNode, selectedDagMap, simJson]) => {
   initSimFunctions(targetNode, dagMap, simJson)
 }
 
+exports.main = main
 main(process.argv.slice(2))
