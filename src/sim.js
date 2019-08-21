@@ -2,7 +2,7 @@
 const dagMap1 = require('./dagMaps').dagMap1
 const dagMap2 = require('./dagMaps').dagMap2
 const dagMap3 = require('./dagMaps').dagMap3
-const asyncDagProcessor = require('./asyncDagProcessor')
+const asyncDagProcessorSetup = require('./asyncDagProcessor').setup
 
 const initSimFunctions = (targetNode, dagMap, simJson) => {
   if (!targetNode) { console.log('!! args must be targetNode simMap(optional)'); return }
@@ -13,7 +13,7 @@ const initSimFunctions = (targetNode, dagMap, simJson) => {
     simMsg = '-- START SIMULATION --'
   }
   console.log(`Target node is: ${targetNode} ${simMsg}`)
-  asyncDagProcessor.entry(targetNode, dagMap)
+  asyncDagProcessorSetup.entry(targetNode, dagMap)
 }
 
 const modifyDagMapForSim = (dagMap, simJson) => {
