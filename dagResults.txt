@@ -1,5 +1,0 @@
-
- ** final map, process time was 4.012 seconds 
-[["node_e",14],["node_b",12],["node_d",137],["node_c",345240]]'
- ** target node is: node_c its final value is:
-          345240

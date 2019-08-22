@@ -6,7 +6,7 @@ const fs = require('fs')
 const np = {
 
   startNodesWithoutDependencies: (dagMetaData) => {
-    for (let [nodeKey, nodeProps] of dagMetaData.mapOfNodesThatCanBeStartedImmediately) {
+    for (let [nodeKey, nodeProps] of dagMetaData.nodesThatCanBeStartedImmediately) {
       console.log(`!!!! can start node immediately: ${nodeKey}`)
       np.processSingleNode(nodeKey, nodeProps, dagMetaData)
     }
@@ -85,18 +85,22 @@ const np = {
 }
 
 const setup = {
-  processDag: (relationalMap, nodeKeysToProcess, targetNode) => {
-    let mapOfNodesThatCanBeStartedImmediately = new Map([...relationalMap]
-        .filter((mapKeyValAsArray) => mapKeyValAsArray[1].dependentOnNodes && mapKeyValAsArray[1].dependentOnNodes.length === 0))
 
+  findNodesThatCanBeStartedImmediately: (relationalMap) => {
+    let nodesThatCanBeStartedImmediately = new Map([...relationalMap]
+        .filter((mapKeyValAsArray) => mapKeyValAsArray[1].dependentOnNodes && mapKeyValAsArray[1].dependentOnNodes.length === 0))
     //need copy ?? use copy of map in nodesProcessor, because don't want to loop over mutable
+    return nodesThatCanBeStartedImmediately
+  },
+
+  createDagMetaData: (relationalMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately) => {
     const dagMetaData = {}
     dagMetaData.relationalMap = relationalMap
     dagMetaData.nodeKeysToProcess = nodeKeysToProcess
     dagMetaData.targetNode = targetNode
-    dagMetaData.mapOfNodesThatCanBeStartedImmediately = mapOfNodesThatCanBeStartedImmediately
+    dagMetaData.nodesThatCanBeStartedImmediately = nodesThatCanBeStartedImmediately
     dagMetaData.finalMap = new Map()
-    np.startNodesWithoutDependencies(dagMetaData)
+    return dagMetaData
   },
 
   //add nodesToContact and dependentNodes to each node in map
@@ -164,8 +168,11 @@ const setup = {
     console.log('\n ** relational dag map to process')
     console.log(relationalMap)
 
-    setup.processDag(relationalMap, nodeKeysToProcess, targetNode)
+    const nodesThatCanBeStartedImmediately = setup.findNodesThatCanBeStartedImmediately(relationalMap)
+    const dagMetaData = setup.createDagMetaData(relationalMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately)
+    np.startNodesWithoutDependencies(dagMetaData)
   }
+
 }
 
 const startTime = (new Date()).getTime()
