@@ -17,7 +17,7 @@ const np = {
       np.nodeFinishedProcessing(nodeKey, nodesProps.nodesToContact, nodesProps.finalValue, dagMetaData)
     } else {
       console.log(`processing node: ${nodeKey}`)
-      np.executeNodeFunction(nodesProps.func, nodesProps.args)
+      new Promise((resolve) => resolve(nodesProps.func(...nodesProps.args)))
           .then((finalValue) => {
             console.log(`result returned, finalValue for ${nodeKey} is: ${finalValue}`)
             np.nodeFinishedProcessing(nodeKey, nodesProps.nodesToContact, finalValue, dagMetaData)
@@ -27,9 +27,6 @@ const np = {
           })
     }
   },
-
-  //this function call might take some time to return
-  executeNodeFunction: (funcRef, argsRef) => new Promise((resolve) => resolve(funcRef(...argsRef))),
 
   nodeFinishedProcessing: (thisNodeKey, nodesToContact, finalValue, dagMetaData) => {
     console.log(`completeProcessing, removing nodeKeysToProcess: ${thisNodeKey}`)
