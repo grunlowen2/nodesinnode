@@ -1,6 +1,6 @@
 module.exports = {
     'env': {
-        'browser': true,
+        'node': true,
         'es6': true
     },
     'extends': 'eslint:recommended',
@@ -228,7 +228,7 @@ module.exports = {
         'prefer-arrow-callback': 'error',
         'prefer-const': 'off',
         'prefer-destructuring': 'off',
-        'prefer-named-capture-group': 'error',
+        'prefer-named-capture-group': 0,
         'prefer-numeric-literals': 'error',
         'prefer-object-spread': 'error',
         'prefer-promise-reject-errors': 'error',
