@@ -22,23 +22,25 @@ const input = [{
   "food": "false"
   }]
 
-const breathable = (oxygen, carbon) => {
+const breathable = ({oxygen, carbon}) => {
   return (145 < oxygen && carbon < 100) }
 
-const survivable = (breathable, temperature, radiation) => {
+const survivable = ({breathable, temperature, radiation}) => {
   return (breathable && 273 < temperature && temperature < 343 && radiation < 100) }
 
-const defendable = (shielding, munitions, survivable) => {
+const defendable = ({shielding, munitions, survivable}) => {
   return (survivable && 200 < shielding * munitions) }
 
-const habitable = (survivable, water, food) => {
+const habitable = ({survivable, water, food}) => {
   return (survivable && water && food) }
 
 const spaceStationDag = new Map()
-spaceStationDag.set('breathable', {'func':breathable, 'args':['oxygen', 'carbon']})
-spaceStationDag.set('survivable', {'func':survivable, 'args':['breathable', 'temperature', 'radiation']})
-spaceStationDag.set('defendable', {'func':defendable, 'args':['shielding', 'munitions', 'survivable']})
-spaceStationDag.set('habitable', {'func':habitable, 'args':['survivable', 'water', 'food']})
+spaceStationDag.set('breathable', {'func':breathable, 'args':{'oxygen':'', 'carbon':''}})
+spaceStationDag.set('survivable', {'func':survivable, 'args':{'breathable':'', 'temperature':'', 'radiation':''}})
+spaceStationDag.set('defendable', {'func':defendable, 'args':{'shielding':'', 'munitions':'', 'survivable':''}})
+spaceStationDag.set('habitable', {'func':habitable, 'args':{'survivable':'', 'water':'', 'food':''}})
 
 
 exports.spaceStationDag = spaceStationDag
+
+// [{:survivable true, :shielding 100, :carbon 38, :habitable true, :radiation 0, :food true, :munitions 100, :defendable true, :breathable true, :oxygen 160, :water true, :temperature 298}]

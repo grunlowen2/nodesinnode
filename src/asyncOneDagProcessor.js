@@ -12,15 +12,15 @@ const np = {
     }
   },
 
-  processSingleNode: (nodeKey, nodesProps, dagMetaData) => {
-    if (nodesProps.finalValue) {
-      np.nodeFinishedProcessing(nodeKey, nodesProps.nodesToContact, nodesProps.finalValue, dagMetaData)
+  processSingleNode: (nodeKey, nodeProps, dagMetaData) => {
+    if (nodeProps.finalValue) {
+      np.nodeFinishedProcessing(nodeKey, nodeProps.nodesToContact, nodeProps.finalValue, dagMetaData)
     } else {
       console.log(`processing node: ${nodeKey}`)
-      new Promise((resolve) => resolve(nodesProps.func(...nodesProps.args)))
+      new Promise((resolve) => resolve(nodeProps.func(nodeProps.args)))
           .then((finalValue) => {
             console.log(`result returned, finalValue for ${nodeKey} is: ${finalValue}`)
-            np.nodeFinishedProcessing(nodeKey, nodesProps.nodesToContact, finalValue, dagMetaData)
+            np.nodeFinishedProcessing(nodeKey, nodeProps.nodesToContact, finalValue, dagMetaData)
           })
           .catch((err) => {
             console.log(`error processing node ${nodeKey} error: ${err}`)
@@ -44,7 +44,7 @@ const np = {
       let eachNodeToContactValObj = dagMetaData.relationalMap.get(eachNodeToContactKey)
       let argsOfNodeToContact = eachNodeToContactValObj.args
       console.log(`contacting node: ${eachNodeToContactKey}, replacing arg ${thisNodeKey} with ${finalValue}`)
-      argsOfNodeToContact.splice(argsOfNodeToContact.indexOf(thisNodeKey), 1, finalValue)
+      argsOfNodeToContact[thisNodeKey] = finalValue
       //have set the finalValue in other node's args, now remove this node ref from other dependentOnNodes
       _.remove(eachNodeToContactValObj.dependentOnNodes, (each) => each === thisNodeKey)
       np.determineIfOtherNodeCanStart(eachNodeToContactValObj, eachNodeToContactKey, dagMetaData)
@@ -59,18 +59,18 @@ const np = {
   },
 
   addNodeToFinalMap: (nodeKey, finalValue, dagMetaData) => {
-    dagMetaData.finalMap.set(nodeKey, finalValue)
+    dagMetaData.finalMap[nodeKey] = String(finalValue)
   },
 
   //api call or whatever
   publishResults: (dagMetaData) => {
     const processTimeMsg = `\n ** final map, process time was ${((new Date()).getTime() - startTime) / 1000} seconds \n`
     const finalNodeMsg = `'\n ** target node is: ${dagMetaData.targetNode} its final value is:
-          ${dagMetaData.finalMap.get(dagMetaData.targetNode)}`
+          ${dagMetaData.finalMap[dagMetaData.targetNode]}`
     const stream = fs.createWriteStream('./dagResults.txt')
     stream.once('open', () => {
       stream.write(processTimeMsg)
-      stream.write(JSON.stringify([...dagMetaData.finalMap]))
+      stream.write(JSON.stringify(dagMetaData.finalMap))
       stream.write(finalNodeMsg)
       stream.end()
     })
@@ -90,13 +90,14 @@ const setup = {
     return nodesThatCanBeStartedImmediately
   },
 
-  createDagMetaData: (relationalMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately) => {
+  createDagMetaData: (relationalMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately, inputData) => {
     const dagMetaData = {}
     dagMetaData.relationalMap = relationalMap
     dagMetaData.nodeKeysToProcess = nodeKeysToProcess
     dagMetaData.targetNode = targetNode
     dagMetaData.nodesThatCanBeStartedImmediately = nodesThatCanBeStartedImmediately
-    dagMetaData.finalMap = new Map()
+    console.log(inputData)
+    dagMetaData.finalMap = JSON.parse(inputData)
     return dagMetaData
   },
 
@@ -106,7 +107,7 @@ const setup = {
       //can't have dependencies, and other nodes will add themselves to nodesToContact
       if (!Object.prototype.hasOwnProperty.call(nodeProps, 'finalValue')) {
       //iterate over args to find any 'node' references if the map has the node entry, then get it, and add this node to its nodesToContact
-        for (let targetArg of nodeProps.args) {
+        for (let targetArg in nodeProps.args) {
           if (relationalMap.has(targetArg)) {
             let otherNode = relationalMap.get(targetArg)
             otherNode.nodesToContact.push(nodeKey)
@@ -139,8 +140,9 @@ const setup = {
   determineNodesToProcess: (dagMap, targetNodeKey, setOfNodesToProcess = new Set([])) => {
     if (dagMap.has(targetNodeKey)) { setOfNodesToProcess.add(targetNodeKey) }
     let targetNodeArgs = dagMap.get(targetNodeKey).args
+    console.log(targetNodeArgs)
     if (targetNodeArgs) {
-      for (let arg of targetNodeArgs) {
+      for (let arg in targetNodeArgs) {
         //if the arg is a node, add it to setOfNodesToProcess
         if (dagMap.has(arg)) {
           setOfNodesToProcess.add(arg)
@@ -152,7 +154,7 @@ const setup = {
     return Array.from(setOfNodesToProcess)
   },
 
-  entry: (targetNode, dagMap) => {
+  entry: (targetNode, dagMap, inputData) => {
     if (!targetNode || !dagMap) { console.log('no target node or dag map provided'); return }
     console.log('** raw dag map')
     console.log(dagMap)
@@ -166,7 +168,7 @@ const setup = {
     console.log(relationalMap)
 
     const nodesThatCanBeStartedImmediately = setup.findNodesThatCanBeStartedImmediately(relationalMap)
-    const dagMetaData = setup.createDagMetaData(relationalMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately)
+    const dagMetaData = setup.createDagMetaData(relationalMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately, inputData)
     np.startNodesWithoutDependencies(dagMetaData)
   }
 

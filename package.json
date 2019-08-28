@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/parallelDagProcessor.js",
     "sim": "node src/sim.js",
+    "simOneDag": "node src/simOneDag.js",
     "test": "jest"
   },
   "author": "",
