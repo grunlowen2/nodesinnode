@@ -2,13 +2,20 @@
 const _ = require('lodash')
 const fs = require('fs')
 
-const entry = (targetNode, dagMapArray) => {
-  for (let eachDagMap of dagMapArray) {
-    processEachDataInputSet(targetNode, eachDagMap)
-  }
+const sleep = (milliseconds) => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
-const processEachDataInputSet = (targetNode, dagMap) => {
+const entry = async (targetNode, dagMapArray) => {
+  const promises = []
+  for (let eachDagMap of dagMapArray) {
+    promises.push(processEachDataInputSet(targetNode, eachDagMap))
+  }
+  const resultValues = await Promise.all(promises)
+  return resultValues
+}
+
+const processEachDataInputSet = async (targetNode, dagMap) => {
   console.log(`\n ** target node \n${targetNode}`)
   console.log('\n ** raw dag map')
   console.log(dagMap)
@@ -25,7 +32,10 @@ const processEachDataInputSet = (targetNode, dagMap) => {
   const nodesThatCanBeStartedImmediately = setup.findNodesThatCanBeStartedImmediately(enhancedMap)
   const dagWithMetaData = setup.createDagWithMetaData(enhancedMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately)
   console.log('\n ** start processing nodes \n')
+  //return promise
   np.startNodesWithoutDependencies(dagWithMetaData)
+  sleep(1000)
+  return('bee')
 }
 
 const setup = {

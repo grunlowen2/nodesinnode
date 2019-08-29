@@ -29,7 +29,7 @@ const reportFormatError = () => {
   console.error('cmd format is: npm run-script sim targetNode dagMap simJson')
 }
 
-const main = function ([targetNode, dagMapName, inputData]) {
+const main = async function ([targetNode, dagMapName, inputData]) {
   if (!targetNode || !dagMapName || !inputData) { reportFormatError(); return; }
   let dagMap = selectDagMap(dagMapName)
   if (!dagMap) { reportFormatError(); return; }
@@ -43,8 +43,9 @@ const main = function ([targetNode, dagMapName, inputData]) {
     var modifiedDagMap = modifyDagMapWithInputData(dagMap, eachInputDataObject)
     modifiedDagMapArray.push(modifiedDagMap)
   }
-//return
-  asyncOneDagProcessor_entry(targetNode, modifiedDagMapArray, inputData)
+  let result = await asyncOneDagProcessor_entry(targetNode, modifiedDagMapArray, inputData)
+  console.log('** final result is: ' + result)
+  return result
 }
 
 exports.main = main
