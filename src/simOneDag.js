@@ -34,17 +34,17 @@ const main = function ([targetNode, dagMapName, inputData]) {
   let dagMap = selectDagMap(dagMapName)
   if (!dagMap) { reportFormatError(); return; }
   if (!dagMap.has(targetNode)) { console.error('!! target node not in dag map'); return }
+  console.log('** input data')
+  console.log(inputData)
 
+  const modifiedDagMapArray = []
   const inputDataObject = JSON.parse(inputData)
-  if (Array.isArray(inputDataObject)) {
-    for (let eachInputDataObject of inputDataObject) {
-      let modifiedDagMap = modifyDagMapWithInputData(dagMap, eachInputDataObject)
-      asyncOneDagProcessor_entry(targetNode, modifiedDagMap, inputData)
-    }
-  } else {
-    const modifiedDagMap = modifyDagMapWithInputData(dagMap, inputDataObject)
-    asyncOneDagProcessor_entry(targetNode, modifiedDagMap, inputData)
+  for (let eachInputDataObject of inputDataObject) {
+    var modifiedDagMap = modifyDagMapWithInputData(dagMap, eachInputDataObject)
+    modifiedDagMapArray.push(modifiedDagMap)
   }
+//return
+  asyncOneDagProcessor_entry(targetNode, modifiedDagMapArray, inputData)
 }
 
 exports.main = main

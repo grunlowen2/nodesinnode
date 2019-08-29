@@ -2,9 +2,13 @@
 const _ = require('lodash')
 const fs = require('fs')
 
-const entry = (targetNode, dagMap, inputData) => {
-  console.log('** input data')
-  console.log(inputData)
+const entry = (targetNode, dagMapArray) => {
+  for (let eachDagMap of dagMapArray) {
+    processEachDataInputSet(targetNode, eachDagMap)
+  }
+}
+
+const processEachDataInputSet = (targetNode, dagMap) => {
   console.log(`\n ** target node \n${targetNode}`)
   console.log('\n ** raw dag map')
   console.log(dagMap)
@@ -19,7 +23,7 @@ const entry = (targetNode, dagMap, inputData) => {
   console.log(enhancedMap)
 
   const nodesThatCanBeStartedImmediately = setup.findNodesThatCanBeStartedImmediately(enhancedMap)
-  const dagWithMetaData = setup.createDagWithMetaData(enhancedMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately, inputData)
+  const dagWithMetaData = setup.createDagWithMetaData(enhancedMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately)
   console.log('\n ** start processing nodes \n')
   np.startNodesWithoutDependencies(dagWithMetaData)
 }
@@ -83,13 +87,13 @@ const setup = {
     return nodesThatCanBeStartedImmediately
   },
 
-  createDagWithMetaData: (dagMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately, inputData) => {
+  createDagWithMetaData: (dagMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately) => {
     const dagWithMetaData = {}
     dagWithMetaData.dagMap = dagMap
     dagWithMetaData.nodeKeysToProcess = nodeKeysToProcess
     dagWithMetaData.targetNode = targetNode
     dagWithMetaData.nodesThatCanBeStartedImmediately = nodesThatCanBeStartedImmediately
-    dagWithMetaData.finalMap = JSON.parse(inputData)
+    dagWithMetaData.finalMap = {}
     return dagWithMetaData
   }
 
