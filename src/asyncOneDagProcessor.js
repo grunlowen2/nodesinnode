@@ -11,8 +11,7 @@ const entry = async (targetNode, dagMapArray) => {
   for (let eachDagMap of dagMapArray) {
     promises.push(processEachDataInputSet(targetNode, eachDagMap))
   }
-  const resultValues = await Promise.all(promises)
-  return resultValues
+  return await Promise.all(promises)
 }
 
 const processEachDataInputSet = async (targetNode, dagMap) => {
@@ -29,13 +28,12 @@ const processEachDataInputSet = async (targetNode, dagMap) => {
   console.log('\n dag map with dependencies')
   console.log(enhancedMap)
 
-  const nodesThatCanBeStartedImmediately = setup.findNodesThatCanBeStartedImmediately(enhancedMap)
-  const dagWithMetaData = setup.createDagWithMetaData(enhancedMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately)
+  const nodesThatCanBeStarted = setup.findNodesThatCanBeStartedImmediately(enhancedMap)
+  const dagWithMetaData = setup.createDagWithMetaData(enhancedMap, nodeKeysToProcess, targetNode, nodesThatCanBeStarted)
   console.log('\n ** start processing nodes \n')
-  //return promise
-  np.startNodesWithoutDependencies(dagWithMetaData)
-  sleep(1000)
-  return('bee')
+
+  const result = await np.init(dagWithMetaData)
+  return result
 }
 
 const setup = {
@@ -97,12 +95,12 @@ const setup = {
     return nodesThatCanBeStartedImmediately
   },
 
-  createDagWithMetaData: (dagMap, nodeKeysToProcess, targetNode, nodesThatCanBeStartedImmediately) => {
+  createDagWithMetaData: (dagMap, nodeKeysToProcess, targetNode, nodesThatCanBeStarted) => {
     const dagWithMetaData = {}
     dagWithMetaData.dagMap = dagMap
     dagWithMetaData.nodeKeysToProcess = nodeKeysToProcess
     dagWithMetaData.targetNode = targetNode
-    dagWithMetaData.nodesThatCanBeStartedImmediately = nodesThatCanBeStartedImmediately
+    dagWithMetaData.nodesThatCanBeStarted = nodesThatCanBeStarted
     dagWithMetaData.finalMap = {}
     return dagWithMetaData
   }
@@ -112,9 +110,21 @@ const setup = {
 //node processor
 const np = {
 
-  startNodesWithoutDependencies: (dagWithMetaData) => {
-    for (let [nodeKey, nodeProps] of dagWithMetaData.nodesThatCanBeStartedImmediately) {
-      console.log(`!!!! can start node immediately: ${nodeKey}`)
+  init: async (dagWithMetaData) => {
+    console.log('init')
+    np.startNodes(dagWithMetaData)
+    await np.done()
+    return dagWithMetaData.finalMap
+  },
+
+  done: function* () {
+    console.log('gen')
+    yield sleep(2000)
+  },
+
+  startNodes: async (dagWithMetaData) => {
+    for (let [nodeKey, nodeProps] of dagWithMetaData.nodesThatCanBeStarted) {
+      console.log(`!!!! starting node: ${nodeKey}`)
       np.processSingleNode(nodeKey, nodeProps, dagWithMetaData)
     }
   },
@@ -160,8 +170,10 @@ const np = {
 
   determineIfOtherNodeCanStart: (eachNodeToContactValObj, eachNodeToContactKey, dagWithMetaData) => {
     if (eachNodeToContactValObj.dependentOnNodes.length === 0) {
-      console.log(`${eachNodeToContactKey} has no more dependencies, so calling init`)
-      np.processSingleNode(eachNodeToContactKey, eachNodeToContactValObj, dagWithMetaData)
+      console.log(`${eachNodeToContactKey} has no more dependencies, so processing`)
+      dagWithMetaData.nodesThatCanBeStarted = new Map()
+      dagWithMetaData.nodesThatCanBeStarted.set(eachNodeToContactKey, eachNodeToContactValObj)
+      np.startNodes(dagWithMetaData)
     }
   },
 

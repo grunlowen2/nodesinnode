@@ -44,7 +44,8 @@ const main = async function ([targetNode, dagMapName, inputData]) {
     modifiedDagMapArray.push(modifiedDagMap)
   }
   let result = await asyncOneDagProcessor_entry(targetNode, modifiedDagMapArray, inputData)
-  console.log('** final result is: ' + result)
+  console.log('** final result: ')
+  console.log(result)
   return result
 }
 
