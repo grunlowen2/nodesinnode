@@ -2,6 +2,7 @@
 const dagMap1 = require('./dagMaps').dagMap1
 const dagMap2 = require('./dagMaps').dagMap2
 const dagMap3 = require('./dagMaps').dagMap3
+const spaceStationDag = require('./dagSpaceStation').spaceStationDag
 const asyncDagProcessorSetup = require('./asyncDagProcessor').setup
 
 const initSimFunctions = (targetNode, dagMap, simJson) => {
@@ -29,11 +30,12 @@ const modifyDagMapForSim = (dagMap, simJson) => {
 }
 
 const main = function ([targetNode, selectedDagMap, simJson]) {
-  console.log(targetNode)
+  console.log(`target node is: ${targetNode}`)
   var dagMap
   switch (selectedDagMap) {
     case 'dagMap1': dagMap = dagMap1; break;
     case 'dagMap2': dagMap = dagMap2; break;
+    case 'spaceStationDag': dagMap = spaceStationDag; console.log(spaceStationDag); break;
     case 'dagMap3': dagMap = new Map([...dagMap1, ...dagMap2, ...dagMap3]); break;
     default: console.log('cmd format is: npm run-script sim targetNode dagMap simJson'); return;
   }
