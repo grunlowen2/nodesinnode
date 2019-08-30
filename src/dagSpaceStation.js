@@ -1,5 +1,6 @@
 'use strict'
 const customFunctions = require('../shared/customFunctions')
+const sleep = require('../shared/common').sleep
 
 //put in another file
 const input = [{
@@ -22,16 +23,19 @@ const input = [{
   "food": "false"
   }]
 
-const breathable = ({oxygen, carbon}) => {
+const breathable = async ({oxygen, carbon}) => {
+  await sleep(1000)
   return (145 < oxygen && carbon < 100) }
 
-const survivable = ({breathable, temperature, radiation}) => {
+const survivable = async ({breathable, temperature, radiation}) => {
+  await sleep(1000)
   return (breathable && 273 < temperature && temperature < 343 && radiation < 100) }
 
-const defendable = ({shielding, munitions, survivable}) => {
+const defendable = async ({shielding, munitions, survivable}) => {
+  await sleep(1000)
   return (survivable && 200 < shielding * munitions) }
 
-const habitable = ({survivable, water, food}) => {
+const habitable = async ({survivable, water, food}) => {
   return (survivable && water && food) }
 
 const spaceStationDag = new Map()

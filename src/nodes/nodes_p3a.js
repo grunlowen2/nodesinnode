@@ -1,4 +1,4 @@
-const sleep = require('./common').sleep
+const sleep = require('../../shared/common').sleep
 
 exports.nodeDivBy3 = (someInt) => {
   rem = someInt % 3

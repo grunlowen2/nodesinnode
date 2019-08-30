@@ -1,6 +1,7 @@
 'use strict'
 const _ = require('lodash')
 const fs = require('fs')
+const EventEmitter = require('events');
 
 const sleep = (milliseconds) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
@@ -32,7 +33,8 @@ const processEachDataInputSet = async (targetNode, dagMap) => {
   const dagWithMetaData = setup.createDagWithMetaData(enhancedMap, nodeKeysToProcess, targetNode, nodesThatCanBeStarted)
   console.log('\n ** start processing nodes \n')
 
-  const result = await np.init(dagWithMetaData)
+  const result = await np.process(dagWithMetaData)
+  console.log('----------------')
   return result
 }
 
@@ -102,6 +104,7 @@ const setup = {
     dagWithMetaData.targetNode = targetNode
     dagWithMetaData.nodesThatCanBeStarted = nodesThatCanBeStarted
     dagWithMetaData.finalMap = {}
+    dagWithMetaData.processingDoneEventEmitter = new EventEmitter()
     return dagWithMetaData
   }
 
@@ -110,16 +113,11 @@ const setup = {
 //node processor
 const np = {
 
-  init: async (dagWithMetaData) => {
+  process: async (dagWithMetaData) => {
     console.log('init')
     np.startNodes(dagWithMetaData)
-    await np.done()
+    await new Promise(resolve => dagWithMetaData.processingDoneEventEmitter.once('unlocked', resolve))
     return dagWithMetaData.finalMap
-  },
-
-  done: function* () {
-    console.log('gen')
-    yield sleep(2000)
   },
 
   startNodes: async (dagWithMetaData) => {
@@ -151,7 +149,9 @@ const np = {
     np.contactNodes(thisNodeKey, nodesToContact, finalValue, dagWithMetaData)
     np.addNodeToFinalMap(thisNodeKey, finalValue, dagWithMetaData)
 
-    if (_.isEmpty(dagWithMetaData.nodeKeysToProcess)) { np.publishResults(dagWithMetaData) }
+    if (_.isEmpty(dagWithMetaData.nodeKeysToProcess)) {
+      dagWithMetaData.processingDoneEventEmitter.emit('unlocked')
+      np.publishResults(dagWithMetaData) }
   },
 
   //loop thru nodesToContact, remove this node from their dependentOnNodes, and if that
