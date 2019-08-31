@@ -232,7 +232,7 @@ module.exports = {
         'prefer-numeric-literals': 'error',
         'prefer-object-spread': 'error',
         'prefer-promise-reject-errors': 'error',
-        'prefer-reflect': 'error',
+        'prefer-reflect': 0,
         'prefer-rest-params': 'error',
         'prefer-spread': 'error',
         'prefer-template': 'error',
