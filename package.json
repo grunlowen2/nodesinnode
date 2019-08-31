@@ -16,6 +16,7 @@
     "aws-sdk": "^2.488.0",
     "jsonschema": "^1.2.4",
     "lodash": "^4.17.11",
+    "log4js": "^5.1.0",
     "ow": "^0.13.2"
   },
   "devDependencies": {

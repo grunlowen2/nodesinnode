@@ -10,7 +10,6 @@ const modifyDagMapWithInputData = (dagMap, inputDataObject) => {
   const inputMap = new Map(Object.entries(inputDataObject))
   for (const dagMapObject of modifiedDagMap.values()) {
     for (let [inputMapKey, inputMapValue] of inputMap) {
-      //if (Reflect.apply(Object.prototype.hasOwnProperty, inputMapKey, dagMapObject.args)) {
       if (Object.prototype.hasOwnProperty.call(dagMapObject.args, inputMapKey)) {
         dagMapObject.args[inputMapKey] = inputMapValue
       }

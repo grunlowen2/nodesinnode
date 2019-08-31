@@ -1,11 +1,12 @@
 'use strict'
 const _ = require('lodash')
-const fs = require('fs')
 const EventEmitter = require('events');
+const logger = require('log4js').getLogger();
+logger.level = process.env.NODE_LOG_LEVEL
 
-const entry = async (targetNodes, dagMapArray) => {
-  console.log(dagMapArray[0].get('breathable').args)
-  console.log(`\n ** target nodes \n ${targetNodes}`)
+const entry = (targetNodes, dagMapArray) => {
+  logger.debug(dagMapArray[0].get('breathable').args)
+  logger.debug(`\n ** target nodes \n ${targetNodes}`)
   //assuming dagMapArray has the same keys, otherwise change dagMapArray[0]
   let setOfNodesToProcess = new Set()
   for (let targetNode of targetNodes) {
@@ -13,31 +14,30 @@ const entry = async (targetNodes, dagMapArray) => {
     setOfNodesToProcess = new Set([...setOfNodesToProcess, ...eachTargetNodesToProcess])
   }
   const nodeKeysToProcess = Array.from(setOfNodesToProcess)
-  console.log('\n ** nodeKeysToProcess')
-  nodeKeysToProcess.forEach((each, index) => console.log(`${index + 1}: ${each}`))
+  logger.debug('\n ** nodeKeysToProcess')
+  nodeKeysToProcess.forEach((each, index) => logger.debug(`${index + 1}: ${each}`))
 
   const nodeProcessorPromises = []
   for (let eachDagMap of dagMapArray) {
    nodeProcessorPromises.push(processEachDataInputSet(nodeKeysToProcess, targetNodes, eachDagMap))
   }
-  return await Promise.all(nodeProcessorPromises)
+  return Promise.all(nodeProcessorPromises)
 }
 
 const processEachDataInputSet = async (nodeKeysToProcess, targetNodes, dagMap) => {
-  console.log('\n ** raw dag map')
-  console.log(dagMap)
+  logger.debug('\n ** raw dag map')
+  logger.debug(dagMap)
 
   const enhancedMap = setup.createEnhancedMap(dagMap, nodeKeysToProcess)
   setup.populateDependencies(enhancedMap)
-  console.log('\n dag map with dependencies')
-  console.log(enhancedMap)
+  logger.debug('\n ** dag map with dependencies')
+  logger.debug(enhancedMap)
 
   const nodesThatCanBeStarted = setup.findNodesThatCanBeStartedImmediately(enhancedMap)
   const dagWithMetaData = setup.createDagWithMetaData(enhancedMap, nodeKeysToProcess, targetNodes, nodesThatCanBeStarted)
-  console.log('\n ** start processing nodes \n')
+  logger.debug('\n ** start processing nodes \n')
 
   const result = await np.process(dagWithMetaData)
-  console.log('----------------')
   return result
 }
 
@@ -62,8 +62,6 @@ const setup = {
 
   //add the common props to each node
   createEnhancedMap: (dagMap, nodeKeysToProcess) => {
-    console.log('============')
-    console.log(nodeKeysToProcess)
     //only want a map with nodes contained in nodeKeysToProcess
     const dagMapBasedOnTargetNode = new Map([...dagMap].filter(([key, val]) => _.includes(nodeKeysToProcess, key)))
     //don't want original dagMap to be modified, above 'new Map' still has references to original
@@ -119,15 +117,14 @@ const setup = {
 const np = {
 
   process: async (dagWithMetaData) => {
-    console.log('init')
     np.startNodes(dagWithMetaData)
-    await new Promise(resolve => dagWithMetaData.processingDoneEventEmitter.once('unlocked', resolve))
+    await new Promise((resolve) => dagWithMetaData.processingDoneEventEmitter.once('unlocked', resolve))
     return dagWithMetaData.finalResults
   },
 
-  startNodes: async (dagWithMetaData) => {
+  startNodes: (dagWithMetaData) => {
     for (let [nodeKey, nodeProps] of dagWithMetaData.nodesThatCanBeStarted) {
-      console.log(`!!!! starting node: ${nodeKey}`)
+      logger.debug(`!!!! starting node: ${nodeKey}`)
       np.processSingleNode(nodeKey, nodeProps, dagWithMetaData)
     }
   },
@@ -136,20 +133,20 @@ const np = {
     if (nodeProps.finalValue) {
       np.nodeFinishedProcessing(nodeKey, nodeProps.nodesToContact, nodeProps.finalValue, dagWithMetaData)
     } else {
-      console.log(`processing node: ${nodeKey}`)
+      logger.debug(`processing node: ${nodeKey}`)
       new Promise((resolve) => resolve(nodeProps.func(nodeProps.args)))
           .then((finalValue) => {
-            console.log(`result returned, finalValue for ${nodeKey} is: ${finalValue}`)
+            logger.debug(`result returned, finalValue for ${nodeKey} is: ${finalValue}`)
             np.nodeFinishedProcessing(nodeKey, nodeProps.nodesToContact, finalValue, dagWithMetaData)
           })
           .catch((err) => {
-            console.log(`error processing node ${nodeKey} error: ${err}`)
+            logger.debug(`error processing node ${nodeKey} error: ${err}`)
           })
     }
   },
 
   nodeFinishedProcessing: (thisNodeKey, nodesToContact, finalValue, dagWithMetaData) => {
-    console.log(`completeProcessing, removing nodeKeysToProcess: ${thisNodeKey}`)
+    logger.debug(`completeProcessing, removing nodeKeysToProcess: ${thisNodeKey}`)
     _.remove(dagWithMetaData.nodeKeysToProcess, (each) => each === thisNodeKey)
     np.contactNodes(thisNodeKey, nodesToContact, finalValue, dagWithMetaData)
     np.addNodeTofinalResults(thisNodeKey, finalValue, dagWithMetaData)
@@ -165,7 +162,7 @@ const np = {
     for (let eachNodeToContactKey of nodesToContact) {
       let eachNodeToContactValObj = dagWithMetaData.dagMap.get(eachNodeToContactKey)
       let argsOfNodeToContact = eachNodeToContactValObj.args
-      console.log(`contacting node: ${eachNodeToContactKey}, replacing arg ${thisNodeKey} with ${finalValue}`)
+      logger.debug(`contacting node: ${eachNodeToContactKey}, replacing arg ${thisNodeKey} with ${finalValue}`)
       argsOfNodeToContact[thisNodeKey] = finalValue
       //have set the finalValue in other node's args, now remove this node ref from other dependentOnNodes
       _.remove(eachNodeToContactValObj.dependentOnNodes, (each) => each === thisNodeKey)
@@ -175,7 +172,7 @@ const np = {
 
   determineIfOtherNodeCanStart: (eachNodeToContactValObj, eachNodeToContactKey, dagWithMetaData) => {
     if (eachNodeToContactValObj.dependentOnNodes.length === 0) {
-      console.log(`${eachNodeToContactKey} has no more dependencies, so processing`)
+      logger.debug(`${eachNodeToContactKey} has no more dependencies, so processing`)
       dagWithMetaData.nodesThatCanBeStarted = new Map()
       dagWithMetaData.nodesThatCanBeStarted.set(eachNodeToContactKey, eachNodeToContactValObj)
       np.startNodes(dagWithMetaData)
@@ -186,11 +183,9 @@ const np = {
     if (dagWithMetaData.targetNodes.includes(nodeKey)) {
       dagWithMetaData.finalResults[nodeKey] = finalValue
     }
-  },
+  }
 
 }
-
-const startTime = (new Date()).getTime()
 
 exports.entry = entry
 exports.setup = setup
