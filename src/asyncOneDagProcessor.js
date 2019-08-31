@@ -3,26 +3,28 @@ const _ = require('lodash')
 const fs = require('fs')
 const EventEmitter = require('events');
 
-const sleep = (milliseconds) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds))
-}
-
-const entry = async (targetNode, dagMapArray) => {
-  const promises = []
-  for (let eachDagMap of dagMapArray) {
-    promises.push(processEachDataInputSet(targetNode, eachDagMap))
+const entry = async (targetNodes, dagMapArray) => {
+  console.log(`\n ** target nodes \n ${targetNodes}`)
+  //assuming dagMapArray has the same keys, otherwise change dagMapArray[0]
+  let setOfNodesToProcess = new Set()
+  for (let targetNode of targetNodes) {
+    let eachTargetNodesToProcess = setup.determineNodesToProcess(dagMapArray[0], targetNode)
+    setOfNodesToProcess = new Set([...setOfNodesToProcess, ...eachTargetNodesToProcess])
   }
-  return await Promise.all(promises)
-}
-
-const processEachDataInputSet = async (targetNode, dagMap) => {
-  console.log(`\n ** target node \n${targetNode}`)
-  console.log('\n ** raw dag map')
-  console.log(dagMap)
-
-  const nodeKeysToProcess = setup.determineNodesToProcess(dagMap, targetNode)
+  const nodeKeysToProcess = Array.from(setOfNodesToProcess)
   console.log('\n ** nodeKeysToProcess')
   nodeKeysToProcess.forEach((each, index) => console.log(`${index + 1}: ${each}`))
+
+  const nodeProcessorPromises = []
+  for (let eachDagMap of dagMapArray) {
+   nodeProcessorPromises.push(processEachDataInputSet(nodeKeysToProcess, eachDagMap))
+  }
+  return await Promise.all(nodeProcessorPromises)
+}
+
+const processEachDataInputSet = async (nodeKeysToProcess, dagMap) => {
+  console.log('\n ** raw dag map')
+  console.log(dagMap)
 
   const enhancedMap = setup.createEnhancedMap(dagMap, nodeKeysToProcess)
   setup.populateDependencies(enhancedMap)
@@ -30,7 +32,7 @@ const processEachDataInputSet = async (targetNode, dagMap) => {
   console.log(enhancedMap)
 
   const nodesThatCanBeStarted = setup.findNodesThatCanBeStartedImmediately(enhancedMap)
-  const dagWithMetaData = setup.createDagWithMetaData(enhancedMap, nodeKeysToProcess, targetNode, nodesThatCanBeStarted)
+  const dagWithMetaData = setup.createDagWithMetaData(enhancedMap, nodeKeysToProcess, nodesThatCanBeStarted)
   console.log('\n ** start processing nodes \n')
 
   const result = await np.process(dagWithMetaData)
@@ -40,7 +42,7 @@ const processEachDataInputSet = async (targetNode, dagMap) => {
 
 const setup = {
 
-  //return only relevant connected to targetNode
+  //return only relevant connected to targetNodes
   determineNodesToProcess: (dagMap, targetNodeKey, setOfNodesToProcess = new Set([])) => {
     if (dagMap.has(targetNodeKey)) { setOfNodesToProcess.add(targetNodeKey) }
     let targetNodeArgs = dagMap.get(targetNodeKey).args
@@ -54,11 +56,13 @@ const setup = {
         }
       }
     }
-    return Array.from(setOfNodesToProcess)
+    return setOfNodesToProcess
   },
 
   //add the common props to each node
   createEnhancedMap: (dagMap, nodeKeysToProcess) => {
+    console.log('============')
+    console.log(nodeKeysToProcess)
     //only want a map with nodes contained in nodeKeysToProcess
     const dagMapBasedOnTargetNode = new Map([...dagMap].filter(([key, val]) => _.includes(nodeKeysToProcess, key)))
     //don't want original dagMap to be modified, above 'new Map' still has references to original
@@ -97,11 +101,10 @@ const setup = {
     return nodesThatCanBeStartedImmediately
   },
 
-  createDagWithMetaData: (dagMap, nodeKeysToProcess, targetNode, nodesThatCanBeStarted) => {
+  createDagWithMetaData: (dagMap, nodeKeysToProcess, nodesThatCanBeStarted) => {
     const dagWithMetaData = {}
     dagWithMetaData.dagMap = dagMap
     dagWithMetaData.nodeKeysToProcess = nodeKeysToProcess
-    dagWithMetaData.targetNode = targetNode
     dagWithMetaData.nodesThatCanBeStarted = nodesThatCanBeStarted
     dagWithMetaData.finalMap = {}
     dagWithMetaData.processingDoneEventEmitter = new EventEmitter()
@@ -151,7 +154,7 @@ const np = {
 
     if (_.isEmpty(dagWithMetaData.nodeKeysToProcess)) {
       dagWithMetaData.processingDoneEventEmitter.emit('unlocked')
-      np.publishResults(dagWithMetaData) }
+    }
   },
 
   //loop thru nodesToContact, remove this node from their dependentOnNodes, and if that
@@ -180,23 +183,6 @@ const np = {
   addNodeToFinalMap: (nodeKey, finalValue, dagWithMetaData) => {
     dagWithMetaData.finalMap[nodeKey] = String(finalValue)
   },
-
-  //api call or whatever
-  publishResults: (dagWithMetaData) => {
-    const processTimeMsg = `\n ** final results map, process time was ${((new Date()).getTime() - startTime) / 1000} seconds \n`
-    const finalNodeMsg = `'\n ** target node is: ${dagWithMetaData.targetNode} its final value is:
-          ${dagWithMetaData.finalMap[dagWithMetaData.targetNode]}`
-    const stream = fs.createWriteStream('./dagResults.txt')
-    stream.once('open', () => {
-      stream.write(processTimeMsg)
-      stream.write(JSON.stringify(dagWithMetaData.finalMap))
-      stream.write(finalNodeMsg)
-      stream.end()
-    })
-    console.log(processTimeMsg)
-    console.log(dagWithMetaData.finalMap)
-    console.log(finalNodeMsg)
-  }
 
 }
 
