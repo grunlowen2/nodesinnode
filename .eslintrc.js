@@ -107,7 +107,7 @@ module.exports = {
         'max-lines': 'error',
         'max-lines-per-function': 'error',
         'max-nested-callbacks': 'error',
-        'max-params': 'error',
+        'max-params': 0,
         'max-statements': 'off',
         'max-statements-per-line': 'off',
         'multiline-comment-style': [
@@ -232,7 +232,7 @@ module.exports = {
         'prefer-numeric-literals': 'error',
         'prefer-object-spread': 'error',
         'prefer-promise-reject-errors': 'error',
-        'prefer-reflect': 'error',
+        'prefer-reflect': 0,
         'prefer-rest-params': 'error',
         'prefer-spread': 'error',
         'prefer-template': 'error',

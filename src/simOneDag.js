@@ -1,53 +1,58 @@
 'use strict'
-const dagMap3 = require('./dagMaps').dagMap3
+const _ = require('lodash')
+//const dagMap3 = require('./dagMaps').dagMap3
 const spaceStationDag = require('./dagSpaceStation').spaceStationDag
-const asyncOneDagProcessor_entry = require('./asyncOneDagProcessor').entry
+const asyncOneDagProcessorEntry = require('./asyncOneDagProcessor').entry
 
 const modifyDagMapWithInputData = (dagMap, inputDataObject) => {
-  let inputMap = new Map(Object.entries(inputDataObject))
-  for (const dagMapObject of dagMap.values()) {
+  //can't modify original, b/c will propigate vals to refs in other maps
+  const modifiedDagMap = _.cloneDeep(dagMap)
+  const inputMap = new Map(Object.entries(inputDataObject))
+  for (const dagMapObject of modifiedDagMap.values()) {
     for (let [inputMapKey, inputMapValue] of inputMap) {
-      if (dagMapObject.args.hasOwnProperty(inputMapKey)) {
+      if (Object.prototype.hasOwnProperty.call(dagMapObject.args, inputMapKey)) {
         dagMapObject.args[inputMapKey] = inputMapValue
       }
     }
   }
-  return dagMap
+  return modifiedDagMap
 }
 
 const selectDagMap = (dagMapName) => {
   let dagMap = {}
   switch (dagMapName) {
     case 'spaceStationDag': dagMap = spaceStationDag; break;
-    case 'dagMap3': dagMap = new Map([...dagMap1, ...dagMap2, ...dagMap3]); break;
-    default: return;
+    //case 'dagMap3': dagMap = new Map([...dagMap1, ...dagMap2, ...dagMap3]); break;
+    default: reportFormatError();
   }
   return dagMap
 }
 
 const reportFormatError = () => {
-  console.error('cmd format is: npm run-script sim targetNode dagMap simJson')
+  throw new Error('cmd format is: npm run-script sim targetNodes dagMap simJson')
 }
 
-const main = async function ([targetNode, dagMapName, inputData]) {
-  if (!targetNode || !dagMapName || !inputData) { reportFormatError(); return; }
+const main = async function ([targetNodes, dagMapName, inputData]) {
+  if (!targetNodes || !dagMapName || !inputData) { reportFormatError() }
   let dagMap = selectDagMap(dagMapName)
-  if (!dagMap) { reportFormatError(); return; }
-  if (!dagMap.has(targetNode)) { console.error('!! target node not in dag map'); return }
-  console.log('** input data')
-  console.log(inputData)
+  const targetNodesArray = JSON.parse(targetNodes)
+  const validTargetNodes = targetNodesArray.reduce((all, eachTargetNode) => all && dagMap.has(eachTargetNode), true)
+  if (!validTargetNodes) { reportFormatError() }
+  console.log(`\n ** input data \n ${inputData}`)
 
   const modifiedDagMapArray = []
   const inputDataObject = JSON.parse(inputData)
   for (let eachInputDataObject of inputDataObject) {
-    var modifiedDagMap = modifyDagMapWithInputData(dagMap, eachInputDataObject)
-    modifiedDagMapArray.push(modifiedDagMap)
+    modifiedDagMapArray.push(modifyDagMapWithInputData(dagMap, eachInputDataObject))
   }
-  let result = await asyncOneDagProcessor_entry(targetNode, modifiedDagMapArray, inputData)
-  console.log('** final result: ')
+  const result = await asyncOneDagProcessorEntry(targetNodesArray, modifiedDagMapArray)
+
+  console.log('\n ** final result: ')
   console.log(result)
+  console.log(`\n process time was ${((new Date()).getTime() - startTime) / 1000} seconds \n`)
   return result
 }
 
+const startTime = (new Date()).getTime()
 exports.main = main
 main(process.argv.slice(2))

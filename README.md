@@ -32,5 +32,5 @@ Experimenting with how to potentially process dags in Node.js
   - npm run-script sim 'node_a' dagMap1 '{ "node_b": { "args":["5"] } }'
   - npm run-script sim 'node_r' dagMap2
   - npm run-script sim 'node_combo' dagMap3
-  - npm run-script simOneDag 'habitable' spaceStationDag '[{"oxygen": "160","carbon": "38","temperature": "298","radiation": "0","shielding": "100","munitions": "100","water": "true","food": "true" }]'
-  - npm run-script simOneDag 'habitable' spaceStationDag '[{"oxygen": "160","carbon": "38","temperature": "298","radiation": "0","shielding": "100","munitions": "100","water": "true","food": "true" },{"oxygen": "160","carbon": "38","temperature": "298","radiation": "0","shielding": "100","munitions": "100","water": "false","food": "false" }]'
+  - npm run-script simOneDag '["habitable"]' spaceStationDag '[{"oxygen": "160","carbon": "38","temperature": "298","radiation": "0","shielding": "100","munitions": "100","water": true,"food": true }]'
+  - npm run-script simOneDag '["habitable", "survivable"]' spaceStationDag '[{"oxygen": "160","carbon": "38","temperature": "298","radiation": "0","shielding": "100","munitions": "100","water":true,"food": true },{"oxygen": "160","carbon": "38","temperature": "298","radiation": "0","shielding": "100","munitions": "100","water": false,"food": false }]'

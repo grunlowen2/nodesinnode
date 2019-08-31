@@ -25,18 +25,18 @@ const input = [{
 
 const breathable = async ({oxygen, carbon}) => {
   await sleep(1000)
-  return (145 < oxygen && carbon < 100) }
+  return 145 < oxygen && carbon < 100 }
 
 const survivable = async ({breathable, temperature, radiation}) => {
   await sleep(1000)
-  return (breathable && 273 < temperature && temperature < 343 && radiation < 100) }
+  return breathable && 273 < temperature && temperature < 343 && radiation < 100 }
 
 const defendable = async ({shielding, munitions, survivable}) => {
   await sleep(1000)
-  return (survivable && 200 < shielding * munitions) }
+  return survivable && 200 < shielding * munitions }
 
 const habitable = async ({survivable, water, food}) => {
-  return (survivable && water && food) }
+  return survivable && water && food }
 
 const spaceStationDag = new Map()
 spaceStationDag.set('breathable', {'func':breathable, 'args':{'oxygen':'', 'carbon':''}})
