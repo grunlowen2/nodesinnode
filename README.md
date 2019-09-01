@@ -27,5 +27,5 @@ Experimenting with how to potentially process dags in Node.js
 - Command format:
   - npm run-script sim targetNodes dagMap
 - Examples:
-  - npm run-script simOneDag '["habitable"]' dagSpaceStation
-  - npm run-script simOneDag '["habitable", "survivable"]' dagSpaceStationExpanded
+  - npm run-script simOneDag '["habitable", "defendable"]' dagSpaceStation
+  - npm run-script simOneDag '["habitable", "defendable"]' dagSpaceStationExpanded

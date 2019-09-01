@@ -3,15 +3,12 @@ const customFunctions = require('../shared/customFunctions')
 const sleep = require('../shared/common').sleep
 
 const breathable = async ({oxygen, carbon}) => {
-  await sleep(1000)
   return 145 < oxygen && carbon < 100 }
 
 const survivable = async ({breathable, temperature, radiation}) => {
-  await sleep(1000)
   return breathable && 273 < temperature && temperature < 343 && radiation < 100 }
 
 const defendable = async ({shielding, munitions, survivable}) => {
-  await sleep(1000)
   return survivable && 200 < shielding * munitions }
 
 const habitable = async ({survivable, water, food}) => {
@@ -24,23 +21,41 @@ dag.set('defendable', {'func':defendable, 'args':{'shielding':'', 'munitions':''
 dag.set('habitable', {'func':habitable, 'args':{'survivable':'', 'water':'', 'food':''}})
 
 const sampleInput = [{
-  "oxygen": "160",
-  "carbon": "38",
-  "temperature": "298",
-  "radiation": "0",
-  "shielding": "100",
-  "munitions": "100",
-  "water": true,
-  "food": true },
+  oxygen: 160,
+  carbon: 38,
+  temperature: 298,
+  radiation: 0,
+  shielding: 100,
+  munitions: 100,
+  water: true,
+  food: true },
   {
-  "oxygen": "160",
-  "carbon": "38",
-  "temperature": "298",
-  "radiation": "0",
-  "shielding": "100",
-  "munitions": "100",
-  "water": false,
-  "food": false
+  oxygen: 0,
+  carbon: 760,
+  temperature: 1,
+  radiation: 2000,
+  shielding: 0,
+  munitions: 0,
+  water: false,
+  food: false },
+  {
+  oxygen: 160,
+  carbon: 38,
+  temperature: 298,
+  radiation: 0,
+  shielding: 0,
+  munitions: 0,
+  water: true,
+  food: true },
+  {
+  oxygen: 160,
+  carbon: 38,
+  temperature: 298,
+  radiation: 0,
+  shielding: 100,
+  munitions: 100,
+  water: false,
+  food: false
   }]
 
 exports.dag = dag
