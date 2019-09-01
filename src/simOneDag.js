@@ -55,11 +55,5 @@ const reportFormatError = () => {
   throw new Error('cmd format is: npm run-script sim targetNodes dagMap simJson')
 }
 
-const ping = (args) => {
-  console.log(args)
-  return args
-}
-
 exports.main = main
-exports.ping = ping
-//main(process.argv.slice(2))
+main(process.argv.slice(2))
