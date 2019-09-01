@@ -23,25 +23,4 @@ dag.set('survivable', {'func':survivable, 'args':{'breathable':'', 'temperature'
 dag.set('defendable', {'func':defendable, 'args':{'shielding':'', 'munitions':'', 'survivable':''}})
 dag.set('habitable', {'func':habitable, 'args':{'survivable':'', 'water':'', 'food':''}})
 
-const sampleInput = [{
-  "oxygen": "160",
-  "carbon": "38",
-  "temperature": "298",
-  "radiation": "0",
-  "shielding": "100",
-  "munitions": "100",
-  "water": true,
-  "food": true },
-  {
-  "oxygen": "160",
-  "carbon": "38",
-  "temperature": "298",
-  "radiation": "0",
-  "shielding": "100",
-  "munitions": "100",
-  "water": false,
-  "food": false
-  }]
-
 exports.dag = dag
-exports.sampleInput = sampleInput

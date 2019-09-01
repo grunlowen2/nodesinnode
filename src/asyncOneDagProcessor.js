@@ -5,7 +5,6 @@ const logger = require('log4js').getLogger();
 logger.level = process.env.NODE_LOG_LEVEL
 
 const entry = (targetNodes, dagMapArray) => {
-  logger.debug(dagMapArray[0].get('breathable').args)
   logger.debug(`\n ** target nodes \n ${targetNodes}`)
   //assuming dagMapArray has the same keys, otherwise change dagMapArray[0]
   let setOfNodesToProcess = new Set()

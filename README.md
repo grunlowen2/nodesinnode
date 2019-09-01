@@ -18,19 +18,14 @@ Experimenting with how to potentially process dags in Node.js
 - Define a dag map in a json format.
 - Simulate/overwrite individual nodes.
 - Combine dag maps.
-- Process nodes not sequentially, but instead as soon as they can be processed.
 - Ability to store functions as strings.
 - Ability to validate function arguments. (see ow.js)
+- Process nodes as soon as they are able to be processed.
 
 ## Run program
-- Clone repo, and cd into
-- The command format is:
-  - npm run-script sim targetNode dagMap simJson
-- Some examples:
-  - npm run-script sim 'node_c' dagMap1 '{ "node_e": {"finalValue":-5} }'
-  - npm run-script sim 'node_lastMap1' dagMap1
-  - npm run-script sim 'node_a' dagMap1 '{ "node_b": { "args":["5"] } }'
-  - npm run-script sim 'node_r' dagMap2
-  - npm run-script sim 'node_combo' dagMap3
-  - npm run-script simOneDag '["habitable"]' spaceStationDag '[{"oxygen": "160","carbon": "38","temperature": "298","radiation": "0","shielding": "100","munitions": "100","water": true,"food": true }]'
-  - npm run-script simOneDag '["habitable", "survivable"]' spaceStationDag '[{"oxygen": "160","carbon": "38","temperature": "298","radiation": "0","shielding": "100","munitions": "100","water":true,"food": true },{"oxygen": "160","carbon": "38","temperature": "298","radiation": "0","shielding": "100","munitions": "100","water": false,"food": false }]'
+- Clone repo, cd into
+- Command format:
+  - npm run-script sim targetNodes dagMap
+- Examples:
+  - npm run-script simOneDag '["habitable"]' dagSpaceStation
+  - npm run-script simOneDag '["habitable", "survivable"]' dagSpaceStationExpanded

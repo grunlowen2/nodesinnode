@@ -1,7 +1,9 @@
 'use strict'
 const _ = require('lodash')
 //const dagMap3 = require('./dagMaps').dagMap3
-const spaceStationDag = require('./dagSpaceStation').spaceStationDag
+const dagSpaceStation = require('./dagSpaceStation')
+const dagSpaceStationExpanded = require('./dagSpaceStationExpanded')
+const sampleInput = require('./dagSpaceStation').sampleInput
 const asyncOneDagProcessorEntry = require('./asyncOneDagProcessor').entry
 
 const modifyDagMapWithInputData = (dagMap, inputDataObject) => {
@@ -21,7 +23,8 @@ const modifyDagMapWithInputData = (dagMap, inputDataObject) => {
 const selectDagMap = (dagMapName) => {
   let dagMap = {}
   switch (dagMapName) {
-    case 'spaceStationDag': dagMap = spaceStationDag; break;
+    case 'dagSpaceStation': dagMap = dagSpaceStation.dag; break;
+    case 'dagSpaceStationExpanded': dagMap = dagSpaceStationExpanded.dag; break;
     //case 'dagMap3': dagMap = new Map([...dagMap1, ...dagMap2, ...dagMap3]); break;
     default: reportFormatError();
   }
@@ -32,17 +35,15 @@ const reportFormatError = () => {
   throw new Error('cmd format is: npm run-script sim targetNodes dagMap simJson')
 }
 
-const main = async function ([targetNodes, dagMapName, inputData]) {
-  if (!targetNodes || !dagMapName || !inputData) { reportFormatError() }
+const main = async function ([targetNodes, dagMapName]) {
+  if (!targetNodes || !dagMapName) { reportFormatError() }
   let dagMap = selectDagMap(dagMapName)
   const targetNodesArray = JSON.parse(targetNodes)
   const validTargetNodes = targetNodesArray.reduce((all, eachTargetNode) => all && dagMap.has(eachTargetNode), true)
   if (!validTargetNodes) { reportFormatError() }
-  console.log(`\n ** input data \n ${inputData}`)
 
   const modifiedDagMapArray = []
-  const inputDataObject = JSON.parse(inputData)
-  for (let eachInputDataObject of inputDataObject) {
+  for (let eachInputDataObject of sampleInput) {
     modifiedDagMapArray.push(modifyDagMapWithInputData(dagMap, eachInputDataObject))
   }
   const result = await asyncOneDagProcessorEntry(targetNodesArray, modifiedDagMapArray)
