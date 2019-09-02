@@ -117,7 +117,7 @@ const np = {
 
   process: async (dagWithMetaData) => {
     np.startNodes(dagWithMetaData)
-    await new Promise((resolve) => dagWithMetaData.processingDoneEventEmitter.once('unlocked', resolve))
+    await new Promise((resolve) => dagWithMetaData.processingDoneEventEmitter.once('SINGLE_DAG_COMPLETE', resolve))
     return dagWithMetaData.finalResults
   },
 
@@ -151,7 +151,7 @@ const np = {
     np.addNodeTofinalResults(thisNodeKey, finalValue, dagWithMetaData)
 
     if (_.isEmpty(dagWithMetaData.nodeKeysToProcess)) {
-      dagWithMetaData.processingDoneEventEmitter.emit('unlocked')
+      dagWithMetaData.processingDoneEventEmitter.emit('SINGLE_DAG_COMPLETE')
     }
   },
 
