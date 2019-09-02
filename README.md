@@ -24,6 +24,7 @@ Experimenting with how to potentially process dags in Node.js
 
 ## Run program
 - Clone repo, cd into
+- npm install
 - Command format:
   - npm run-script sim targetNodes dagMap
 - Examples:
