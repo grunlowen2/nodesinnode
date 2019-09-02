@@ -16,6 +16,8 @@ const buildable = async ({breathable, temperature}) => {
   return breathable && temperature > -10 }
 
 const defendable = async ({buildable, shielding, munitions, survivable}) => {
+  console.log('defendable sleeping 1 second')
+  await sleep(1000)
   return buildable && survivable && 200 < shielding * munitions }
 
 const habitable = async ({survivable, water, food}) => {
