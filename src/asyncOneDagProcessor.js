@@ -5,7 +5,6 @@ const logger = require('log4js').getLogger();
 logger.level = process.env.NODE_LOG_LEVEL
 
 const entry = (targetNodes, dagMapArray) => {
-  logger.debug(dagMapArray[0].get('breathable').args)
   logger.debug(`\n ** target nodes \n ${targetNodes}`)
   //assuming dagMapArray has the same keys, otherwise change dagMapArray[0]
   let setOfNodesToProcess = new Set()
@@ -118,7 +117,7 @@ const np = {
 
   process: async (dagWithMetaData) => {
     np.startNodes(dagWithMetaData)
-    await new Promise((resolve) => dagWithMetaData.processingDoneEventEmitter.once('unlocked', resolve))
+    await new Promise((resolve) => dagWithMetaData.processingDoneEventEmitter.once('SINGLE_DAG_COMPLETE', resolve))
     return dagWithMetaData.finalResults
   },
 
@@ -152,7 +151,7 @@ const np = {
     np.addNodeTofinalResults(thisNodeKey, finalValue, dagWithMetaData)
 
     if (_.isEmpty(dagWithMetaData.nodeKeysToProcess)) {
-      dagWithMetaData.processingDoneEventEmitter.emit('unlocked')
+      dagWithMetaData.processingDoneEventEmitter.emit('SINGLE_DAG_COMPLETE')
     }
   },
 

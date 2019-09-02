@@ -1,7 +1,7 @@
 'use strict'
-const nodes_p1a = require('./nodes/nodes_p1a')
-const nodes_p2a = require('./nodes/nodes_p2a')
-const nodes_p3a = require('./nodes/nodes_p3a')
+const nodes_p1a = require('./sample_nodes/nodes_p1a')
+const nodes_p2a = require('./sample_nodes/nodes_p2a')
+const nodes_p3a = require('./sample_nodes/nodes_p3a')
 const customFunctions = require('../shared/customFunctions')
 
 const dagMap1 = new Map()

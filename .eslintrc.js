@@ -176,7 +176,7 @@ module.exports = {
         'no-param-reassign': 'off',
         'no-path-concat': 'error',
         'no-plusplus': 'error',
-        'no-process-env': 'error',
+        'no-process-env': 0,
         'no-process-exit': 'error',
         'no-proto': 'error',
         'no-restricted-globals': 'error',
