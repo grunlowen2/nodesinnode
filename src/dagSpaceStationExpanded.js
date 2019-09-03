@@ -1,8 +1,7 @@
 'use strict'
-const customFunctions = require('../shared/customFunctions')
 const sleep = require('../shared/common').sleep
 
-const breathable = async ({oxygen, carbon}) => {
+const breathable = ({oxygen, carbon}) => {
   return 145 < oxygen && carbon < 100 }
 
 const survivable = async ({breathable, temperature, radiation}) => {
@@ -20,7 +19,7 @@ const defendable = async ({buildable, shielding, munitions, survivable}) => {
   await sleep(1000)
   return buildable && survivable && 200 < shielding * munitions }
 
-const habitable = async ({survivable, water, food}) => {
+const habitable = ({survivable, water, food}) => {
   return survivable && water && food }
 
 const desireable = async ({desireable, buildable, habitable}) => {
@@ -29,11 +28,11 @@ const desireable = async ({desireable, buildable, habitable}) => {
   return survivable && buildable && habitable }
 
 const dag = new Map()
-dag.set('breathable', {'func':breathable, 'args':{'oxygen':'', 'carbon':''}})
-dag.set('survivable', {'func':survivable, 'args':{'breathable':'', 'temperature':'', 'radiation':''}})
-dag.set('buildable', {'func':buildable, 'args':{'breathable':'', 'temperature':''}})
-dag.set('defendable', {'func':defendable, 'args':{'shielding':'', 'buildable':'', 'munitions':'', 'survivable':''}})
-dag.set('habitable', {'func':habitable, 'args':{'survivable':'', 'water':'', 'food':''}})
-dag.set('desireable', {'func':desireable, 'args':{'survivable':'', 'buildable':'', 'habitable':''}})
+dag.set('breathable', {'func': breathable, 'args': {'oxygen': '', 'carbon':' '}})
+dag.set('survivable', {'func': survivable, 'args': {'breathable': '', 'temperature': '', 'radiation': ''}})
+dag.set('buildable', {'func': buildable, 'args': {'breathable': '', 'temperature': ''}})
+dag.set('defendable', {'func': defendable, 'args': {'shielding': '', 'buildable': '', 'munitions': '', 'survivable': ''}})
+dag.set('habitable', {'func': habitable, 'args': {'survivable': '', 'water': '', 'food': ''}})
+dag.set('desireable', {'func': desireable, 'args': {'survivable': '', 'buildable': '', 'habitable': ''}})
 
 exports.dag = dag
